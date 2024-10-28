@@ -44,8 +44,8 @@ async function downloadExtension(extensionId) {
 
   console.log("-> Downloading extension from:", url)
 
-  // if file exists, return
-  if (fs.existsSync(EXTENSION_FILENAME)) {
+  // if file exists and was modified in the last 24 hours, skip download
+  if (fs.existsSync(EXTENSION_FILENAME) && fs.statSync(EXTENSION_FILENAME).mtime > Date.now() - 86400 * 1000) {
     console.log("-> Extension already downloaded! skip download...")
     return
   }
@@ -167,6 +167,7 @@ async function getProxyIpInfo(driver, proxyUrl) {
   let driver
   try {
     console.log("-> Starting browser...")
+    console.log("-> (this may take 5-10 minutes, please wait)")
 
     driver = await new Builder()
       .forBrowser("chrome")
@@ -231,7 +232,7 @@ async function getProxyIpInfo(driver, proxyUrl) {
         .findElement(By.css("html"))
         .getAttribute("outerHTML")
       fs.writeFileSync("dom.html", dom)
-      console.error('-> No "I got it" button found!')
+      console.error('-> No "I got it" button found!(skip)')
     }
 
     // if found a div include text "Sorry, Gradient is not yet available in your region. ", then exit
@@ -269,11 +270,19 @@ async function getProxyIpInfo(driver, proxyUrl) {
 
     if (supportStatus.includes("Disconnected")) {
       console.log(
-        "-> Failed to connect! may be the proxy has been banned \nGenerating error report..."
+        "-> Failed to connect! Please check the following: ",
       )
+      console.log(`
+    - Make sure the proxy is working, by 'curl -vv -x ${PROXY} https://myip.ipip.net'
+    - Make sure the docker image is up to date, by 'docker pull overtrue/gradient-bot' and re-start the container.
+    - The official service itself is not very stable. So it is normal to see abnormal situations. Just wait patiently and it will restart automatically.
+    - If you are using a free proxy, it may be banned by the official service. Please try another static Static Residential proxy.
+  `)
       await generateErrorReport(driver)
       await driver.quit()
-      process.exit(1)
+      setTimeout(() => {
+        process.exit(1)
+      }, 5000)
     }
 
     console.log("-> Connected! Starting rolling...")
