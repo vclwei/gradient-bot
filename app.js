@@ -146,6 +146,7 @@ async function getProxyIpInfo(driver, proxyUrl) {
     console.log("-> Proxy IP info:", pageText)
   } catch (error) {
     console.error("-> Failed to get proxy IP info:", error)
+    throw new Error("Failed to get proxy IP info!")
   }
 }
 
@@ -177,7 +178,11 @@ async function getProxyIpInfo(driver, proxyUrl) {
     console.log("-> Browser started!")
 
     if (PROXY) {
-      await getProxyIpInfo(driver, PROXY)
+      try {
+        await getProxyIpInfo(driver, PROXY)
+      } catch (error) {
+        throw new Error("Failed to get proxy IP info, please check the proxy by the command 'curl -vv -x ${PROXY} https://myip.ipip.net'")
+      }
     }
 
     console.log("-> Started! Logging in https://app.gradient.network/...")
