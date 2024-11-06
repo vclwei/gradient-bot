@@ -8,6 +8,7 @@ const path = require("path")
 const FormData = require("form-data")
 const proxy = require("selenium-webdriver/proxy")
 const proxyChain = require("proxy-chain")
+const { ALL } = require("dns")
 require("dotenv").config()
 
 const extensionId = "caacbgbklghmpodbdafajbgdnegacfmo"
@@ -227,12 +228,8 @@ async function getProxyIpInfo(driver, proxyUrl) {
     await driver.findElement(passwordInput).sendKeys(PASSWORD)
     await driver.findElement(loginButton).click()
 
-    await driver.wait(
-      until.elementLocated(
-        By.xpath('//*[contains(text(), "Copy Referral Link")]')
-      ),
-      30000
-    )
+    // wait until find <a href="/dashboard/setting">
+    await driver.wait(until.elementLocated(By.css('a[href="/dashboard/setting"]')), 30000)
 
     console.log("-> Logged in! Waiting for open extension...")
 
@@ -281,22 +278,19 @@ async function getProxyIpInfo(driver, proxyUrl) {
       console.log("-> Gradient is available in your region. ")
     }
 
-    await driver.wait(
-      until.elementLocated(By.xpath('//*[contains(text(), "Today\'s Taps")]')),
-      30000
-    )
-
     // <div class="absolute mt-3 right-0 z-10">
     const supportStatus = await driver
       .findElement(By.css(".absolute.mt-3.right-0.z-10"))
       .getText()
 
-    const dom = await driver
-      .findElement(By.css("html"))
-      .getAttribute("outerHTML")
-    fs.writeFileSync("dom.html", dom)
 
-    await takeScreenshot(driver, "status.png")
+    if (ALLOW_DEBUG) {
+      const dom = await driver
+        .findElement(By.css("html"))
+        .getAttribute("outerHTML")
+      fs.writeFileSync("dom.html", dom)
+      await takeScreenshot(driver, "status.png")
+    }
 
     console.log("-> Status:", supportStatus)
 
@@ -350,7 +344,8 @@ async function getProxyIpInfo(driver, proxyUrl) {
       console.error("-> Error report generated!")
       console.error(fs.readFileSync("error.log").toString())
       driver.quit()
-      process.exit(1)
     }
+
+    process.exit(1)
   }
 })()

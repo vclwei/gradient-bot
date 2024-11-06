@@ -2,6 +2,6 @@
 .env
 proxies.txt
 error.log
-dom.html
+*.html
 node_modules
 *.png
