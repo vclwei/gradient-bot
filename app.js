@@ -17,7 +17,7 @@ const USER_AGENT =
 
 const USER = process.env.APP_USER || ""
 const PASSWORD = process.env.APP_PASS || ""
-const ALLOW_DEBUG = process.env.ALLOW_DEBUG === "True"
+const ALLOW_DEBUG = !!process.env.DEBUG?.length || false
 const EXTENSION_FILENAME = "app.crx"
 const PROXY = process.env.PROXY || undefined
 
@@ -57,7 +57,7 @@ async function downloadExtension(extensionId) {
         return reject(error)
       }
       fs.writeFileSync(EXTENSION_FILENAME, body)
-      if (process.env.DEBUG) {
+      if (ALLOW_DEBUG) {
         const md5 = crypto.createHash("md5").update(body).digest("hex")
         console.log("-> Extension MD5: " + md5)
       }
@@ -67,8 +67,8 @@ async function downloadExtension(extensionId) {
 }
 
 async function takeScreenshot(driver, filename) {
-  // if process.env.DEBUG is set, taking screenshot
-  if (!process.env.DEBUG) {
+  // if ALLOW_DEBUG is set, taking screenshot
+  if (!ALLOW_DEBUG) {
     return
   }
 
@@ -120,7 +120,7 @@ async function getDriverOptions() {
   options.addArguments("--no-default-browser-check")
   options.addArguments("--disable-default-apps")
 
-  if (!process.env.DEBUG) {
+  if (!ALLOW_DEBUG) {
     options.addArguments("--blink-settings=imagesEnabled=false")
   }
 
