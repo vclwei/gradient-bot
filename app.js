@@ -191,7 +191,6 @@ async function getProxyIpInfo(driver, proxyUrl) {
   let driver
   try {
     console.log("-> Starting browser...")
-    console.log("-> (this may take 5-10 minutes, please wait)")
 
     driver = await new Builder()
       .forBrowser("chrome")
