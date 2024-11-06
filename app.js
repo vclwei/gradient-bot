@@ -44,8 +44,8 @@ async function downloadExtension(extensionId) {
 
   console.log("-> Downloading extension from:", url)
 
-  // if file exists and was modified in the last 24 hours, skip download
-  if (fs.existsSync(EXTENSION_FILENAME) && fs.statSync(EXTENSION_FILENAME).mtime > Date.now() - 86400 * 1000) {
+  // if file exists and modify time is less than 1 day, skip download
+  if (fs.existsSync(EXTENSION_FILENAME) && fs.statSync(EXTENSION_FILENAME).mtime > Date.now() - 86400000) {
     console.log("-> Extension already downloaded! skip download...")
     return
   }
@@ -57,7 +57,7 @@ async function downloadExtension(extensionId) {
         return reject(error)
       }
       fs.writeFileSync(EXTENSION_FILENAME, body)
-      if (ALLOW_DEBUG) {
+      if (process.env.DEBUG) {
         const md5 = crypto.createHash("md5").update(body).digest("hex")
         console.log("-> Extension MD5: " + md5)
       }
@@ -67,6 +67,11 @@ async function downloadExtension(extensionId) {
 }
 
 async function takeScreenshot(driver, filename) {
+  // if process.env.DEBUG is set, taking screenshot
+  if (!process.env.DEBUG) {
+    return
+  }
+
   const data = await driver.takeScreenshot()
   fs.writeFileSync(filename, Buffer.from(data, "base64"))
 }
@@ -84,22 +89,39 @@ async function generateErrorReport(driver) {
 async function getDriverOptions() {
   const options = new chrome.Options()
 
+  options.addArguments("--headless")
   options.addArguments(`user-agent=${USER_AGENT}`)
-  options.addArguments("--headless=new")
+  options.addArguments("--remote-allow-origins=*")
+  options.addArguments("--disable-dev-shm-usage")
+  options.addArguments("--incognito")
+  options.addArguments("--window-size=1920,1080")
+  options.addArguments("--start-maximized")
+  options.addArguments("--disable-renderer-backgrounding")
+  options.addArguments("--disable-background-timer-throttling")
+  options.addArguments("--disable-backgrounding-occluded-windows")
+  options.addArguments("--disable-low-res-tiling")
+  options.addArguments("--disable-client-side-phishing-detection")
+  options.addArguments("--disable-crash-reporter")
+  options.addArguments("--disable-oopr-debug-crash-dump")
+  options.addArguments("--disable-infobars")
+  options.addArguments("--no-crash-upload")
+  options.addArguments("--dns-prefetch-disable")
+  options.addArguments("--disable-crash-reporter")
+  options.addArguments("--disable-popup-blocking")
+  options.addArguments("--disable-gpu")
+  options.addArguments("--allow-running-insecure-content")
+  options.addArguments("--disable-web-security")
   options.addArguments("--ignore-certificate-errors")
   options.addArguments("--ignore-ssl-errors")
   options.addArguments("--no-sandbox")
   options.addArguments("--remote-allow-origins=*")
-  options.addArguments("enable-automation")
-  options.addArguments("--dns-prefetch-disable")
-  options.addArguments("--disable-dev-shm-usage")
-  options.addArguments("--disable-ipv6")
-  // options.addArguments("--disable-gpu")
-  options.addArguments("--aggressive-cache-discard")
-  options.addArguments("--disable-cache")
-  options.addArguments("--disable-application-cache")
-  options.addArguments("--disable-offline-load-stale-cache")
-  options.addArguments("--disk-cache-size=0")
+  options.addArguments("--no-first-run")
+  options.addArguments("--no-default-browser-check")
+  options.addArguments("--disable-default-apps")
+
+  if (!process.env.DEBUG) {
+    options.addArguments("--blink-settings=imagesEnabled=false")
+  }
 
   if (PROXY) {
     console.log("-> Setting up proxy...", PROXY)
@@ -192,8 +214,6 @@ async function getProxyIpInfo(driver, proxyUrl) {
     const passwordInput = By.css('[type="password"]')
     const loginButton = By.css("button")
 
-    await takeScreenshot(driver, "login-page.png")
-
     await driver.wait(until.elementLocated(emailInput), 30000)
     await driver.wait(until.elementLocated(passwordInput), 30000)
     await driver.wait(until.elementLocated(loginButton), 30000)
@@ -212,7 +232,7 @@ async function getProxyIpInfo(driver, proxyUrl) {
     console.log("-> Logged in! Waiting for open extension...")
 
     // 截图登录状态
-    takeScreenshot(driver, "login.png")
+    takeScreenshot(driver, "logined.png")
 
     await driver.get(`chrome-extension://${extensionId}/popup.html`)
 

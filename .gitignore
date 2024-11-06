@@ -1,6 +1,6 @@
 .DS_Store
 .env
-.proxies.txt
+proxies.txt
 error.log
 dom.html
 node_modules
