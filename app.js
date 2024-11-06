@@ -77,6 +77,10 @@ async function takeScreenshot(driver, filename) {
 }
 
 async function generateErrorReport(driver) {
+  //write dom
+  const dom = await driver.findElement(By.css("html")).getAttribute("outerHTML")
+  fs.writeFileSync("error.html", dom)
+
   await takeScreenshot(driver, "error.png")
 
   const logs = await driver.manage().logs().get("browser")
@@ -109,7 +113,7 @@ async function getDriverOptions() {
   options.addArguments("--dns-prefetch-disable")
   options.addArguments("--disable-crash-reporter")
   options.addArguments("--disable-popup-blocking")
-  options.addArguments("--disable-gpu")
+  // options.addArguments("--disable-gpu")
   options.addArguments("--allow-running-insecure-content")
   options.addArguments("--disable-web-security")
   options.addArguments("--ignore-certificate-errors")
@@ -119,9 +123,10 @@ async function getDriverOptions() {
   options.addArguments("--no-first-run")
   options.addArguments("--no-default-browser-check")
   options.addArguments("--disable-default-apps")
+  options.addArguments("--enable-unsafe-swiftshader")
 
   if (!ALLOW_DEBUG) {
-    options.addArguments("--blink-settings=imagesEnabled=false")
+    // options.addArguments("--blink-settings=imagesEnabled=false")
   }
 
   if (PROXY) {
@@ -236,6 +241,8 @@ async function getProxyIpInfo(driver, proxyUrl) {
 
     await driver.get(`chrome-extension://${extensionId}/popup.html`)
 
+    console.log("-> Extension opened!")
+
     // 直到找到 "Status" 文本的 div 元素
     await driver.wait(
       until.elementLocated(By.xpath('//div[contains(text(), "Status")]')),
@@ -340,6 +347,8 @@ async function getProxyIpInfo(driver, proxyUrl) {
 
     if (driver) {
       await generateErrorReport(driver)
+      console.error("-> Error report generated!")
+      console.error(fs.readFileSync("error.log").toString())
       driver.quit()
       process.exit(1)
     }
