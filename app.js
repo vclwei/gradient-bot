@@ -95,6 +95,7 @@ async function getDriverOptions() {
   const options = new chrome.Options()
 
   options.addArguments("--headless")
+  options.addArguments("--single-process")
   options.addArguments(`user-agent=${USER_AGENT}`)
   options.addArguments("--remote-allow-origins=*")
   options.addArguments("--disable-dev-shm-usage")
@@ -110,20 +111,22 @@ async function getDriverOptions() {
   options.addArguments("--disable-crash-reporter")
   options.addArguments("--disable-oopr-debug-crash-dump")
   options.addArguments("--disable-infobars")
-  options.addArguments("--no-crash-upload")
   options.addArguments("--dns-prefetch-disable")
   options.addArguments("--disable-crash-reporter")
+  options.addArguments("--disable-in-process-stack-traces")
   options.addArguments("--disable-popup-blocking")
-  // options.addArguments("--disable-gpu")
-  options.addArguments("--allow-running-insecure-content")
+  options.addArguments("--disable-gpu")
   options.addArguments("--disable-web-security")
+  options.addArguments("--disable-default-apps")
   options.addArguments("--ignore-certificate-errors")
   options.addArguments("--ignore-ssl-errors")
   options.addArguments("--no-sandbox")
-  options.addArguments("--remote-allow-origins=*")
+  options.addArguments("--no-crash-upload")
+  options.addArguments("--no-zygote")
   options.addArguments("--no-first-run")
   options.addArguments("--no-default-browser-check")
-  options.addArguments("--disable-default-apps")
+  options.addArguments("--remote-allow-origins=*")
+  options.addArguments("--allow-running-insecure-content")
   options.addArguments("--enable-unsafe-swiftshader")
 
   if (!ALLOW_DEBUG) {
@@ -333,7 +336,7 @@ async function getProxyIpInfo(driver, proxyUrl) {
       } else {
         console.log(`-> [${USER}] Running without proxy...`)
       }
-    }, 10000)
+    }, 30000)
   } catch (error) {
     console.error("Error occurred:", error)
     // show error line
