@@ -7,11 +7,6 @@
 
 > 下面不用看
 
-## 单独启动一个代理，用于测试
-
-```bash
-sudo APP_USER=example@gmail.com APP_PASS='password' PROXY=socks5://username@password@proxyhost:port node app.js
-```
 
 ## 使用 Docker 启动
 
@@ -47,6 +42,14 @@ docker exec -it <container_id> pm2 logs
 
 ```bash
 docker rm -f <container_id>
+```
+
+## 更新版本
+
+```bash
+docker rm -f <container_id>
+docker pull overtrue/gradient-bot
+docker run -d -e APP_USER=<user@mail.com> -e APP_PASS='<password>' -v ./proxies.txt:/app/proxies.txt overtrue/gradient-bot
 ```
 
 
