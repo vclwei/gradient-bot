@@ -25,14 +25,14 @@ if (!USER || !PASSWORD) {
 
 if (proxies.length === 0) {
   console.error("No proxies found in proxies.txt, will start app without proxy...")
-  execSync(`APP_USER='${USER}' APP_PASS='${PASSWORD}' pm2 start app.js --name gradient-bot-no-proxy`)
+  execSync(`APP_USER='${USER}' APP_PASS='${PASSWORD}' pm2 start app.js --name gradient-bot-no-proxy -l gradient-bot-no-proxy.log`)
   console.log('->  √ Started gradient-bot-no-proxy')
 } else {
   console.log(`-> Found ${proxies.length} proxies in proxies.txt`)
   let index = 0
   for (const proxy of proxies) {
     const name = `gradient-${index++}`
-    execSync(`PROXY=${proxy} APP_USER='${USER}' APP_PASS='${PASSWORD}' pm2 start app.js --name ${name}`)
+    execSync(`PROXY=${proxy} APP_USER='${USER}' APP_PASS='${PASSWORD}' pm2 start app.js --name ${name} -l ${name}.log`)
     console.log(`-> Started ${name} with proxy ${proxy}`)
   }
 
