@@ -9,6 +9,8 @@
 
 ## 使用 Docker 启动
 
+### 准备代理 IP（可选）
+
 将代理地址保存到 `proxies.txt` 文件中，格式为：
 
 > socks5://username:password@proxyhost:port
@@ -23,7 +25,7 @@ docker run -d \
   overtrue/gradient-bot
 ```
 
-注意：`proxies.txt` 路径请替换为正确的路径，或者先 `cd` 到 `proxies.txt` 所在目录再执行 docker run 命令。
+注意：`proxies.txt` 路径请替换为正确的路径，如果没有代理，可以留空，或者先 `cd` 到 `proxies.txt` 所在目录再执行 docker run 命令。
 
 ## 查看运行日志
 

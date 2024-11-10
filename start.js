@@ -1,7 +1,14 @@
 // 1. read proxies from file
 const fs = require('fs')
 const path = require('path')
-const proxies = fs.readFileSync(path.resolve(__dirname, 'proxies.txt'), 'utf-8').split('\n').filter(Boolean)
+
+let proxies = []
+
+try {
+  proxies = fs.readFileSync(path.resolve(__dirname, 'proxies.txt'), 'utf-8').split('\n').filter(Boolean)
+} catch (error) {
+  console.log('-> No proxies.txt found, or error reading file, will start app without proxy...')
+}
 
 // 2. start pm2 with PROXY env
 const { execSync } = require('child_process')
@@ -13,15 +20,22 @@ if (!USER || !PASSWORD) {
   process.exit()
 }
 
-let index = 0
-for (const proxy of proxies) {
-  const name = `gradient-${index++}`
-  execSync(`PROXY=${proxy} APP_USER='${USER}' APP_PASS='${PASSWORD}' pm2 start app.js --name ${name}`)
-  console.log(`-> Started ${name} with proxy ${proxy}`)
+if (proxies.length === 0) {
+  console.error("No proxies found in proxies.txt, will start app without proxy...")
+  execSync(`APP_USER='${USER}' APP_PASS='${PASSWORD}' pm2 start app.js --name gradient-bot-no-proxy`)
+  console.log('->  √ Started gradient-bot-no-proxy')
+} else {
+  console.log(`-> Found ${proxies.length} proxies in proxies.txt`)
+  let index = 0
+  for (const proxy of proxies) {
+    const name = `gradient-${index++}`
+    execSync(`PROXY=${proxy} APP_USER='${USER}' APP_PASS='${PASSWORD}' pm2 start app.js --name ${name}`)
+    console.log(`-> Started ${name} with proxy ${proxy}`)
+  }
+
+  // 3. save proxies to file
+  console.log('-> √ All proxies started!')
 }
 
-// 3. save proxies to file
-console.log('-> √ All proxies started!')
-
 // 4. pm2 status
-execSync('pm2 status')
+execSync('pm2 logs')
