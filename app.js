@@ -8,7 +8,9 @@ const path = require("path")
 const FormData = require("form-data")
 const proxy = require("selenium-webdriver/proxy")
 const proxyChain = require("proxy-chain")
-const { ALL } = require("dns")
+require('console-stamp')(console, {
+  format: ':date(yyyy/mm/dd HH:MM:ss.l)'
+})
 require("dotenv").config()
 
 const extensionId = "caacbgbklghmpodbdafajbgdnegacfmo"

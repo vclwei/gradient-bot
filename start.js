@@ -1,6 +1,9 @@
 // 1. read proxies from file
 const fs = require('fs')
 const path = require('path')
+require('console-stamp')(console, {
+  format: ':date(yyyy/mm/dd HH:MM:ss.l)'
+})
 
 let proxies = []
 
@@ -38,4 +41,4 @@ if (proxies.length === 0) {
 }
 
 // 4. pm2 status
-execSync('pm2 logs')
+execSync('pm2 status')
