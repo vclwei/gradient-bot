@@ -14,7 +14,7 @@ require('console-stamp')(console, {
 require("dotenv").config()
 
 const extensionId = "caacbgbklghmpodbdafajbgdnegacfmo"
-const CRX_URL = `https://clients2.google.com/service/update2/crx?response=redirect&prodversion=98.0.4758.102&acceptformat=crx2,crx3&x=id%3D${extensionId}%26uc&nacl_arch=x86-64`
+const CRX_URL = `https://clients2.google.com/service/update2/crx?response=redirect&prodversion=131.0.0.0&acceptformat=crx2,crx3&x=id%3D${extensionId}%26uc&nacl_arch=x86-64`
 const USER_AGENT =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 
@@ -130,7 +130,6 @@ async function getDriverOptions() {
   options.addArguments("--remote-allow-origins=*")
   options.addArguments("--allow-running-insecure-content")
   options.addArguments("--enable-unsafe-swiftshader")
-  options.addArguments("--disable-software-rasterizer")
 
   if (!ALLOW_DEBUG) {
     // options.addArguments("--blink-settings=imagesEnabled=false")
