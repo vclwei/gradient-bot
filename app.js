@@ -103,7 +103,7 @@ async function getDriverOptions() {
   options.addArguments("--disable-dev-shm-usage")
   // options.addArguments("--incognito")
   options.addArguments('enable-automation')
-  options.addArguments("--window-size=1920,1080")
+  options.addArguments("--window-size=500,600")
   options.addArguments("--start-maximized")
   options.addArguments("--disable-renderer-backgrounding")
   options.addArguments("--disable-background-timer-throttling")
