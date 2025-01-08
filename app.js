@@ -339,7 +339,7 @@ async function getProxyIpInfo(driver, proxyUrl) {
       } else {
         console.log(`-> [${USER}] Running without proxy...`)
       }
-    }, 30000)
+    }, 180000)
   } catch (error) {
     console.error("Error occurred:", error)
     // show error line
