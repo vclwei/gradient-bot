@@ -286,6 +286,7 @@ function sleep(ms) {
         console.log("-> Gradient is available in your region. ")
       }
 
+      await sleep(5000)
       const supportStatus = await driver
         .findElement(By.css(".absolute.mt-3.right-0.z-10"))
         .getText()
@@ -300,11 +301,10 @@ function sleep(ms) {
       }
 
       if (supportStatus.includes("Disconnected")) {
-        console.log("-> Failed to connect, Retry count reached max retry count, exit...")
         await generateErrorReport(driver)
         await driver.quit()
-        console.log("-> Failed to connect, Close browser and retry after 10 seconds...")
-        await sleep(10000)
+        console.log("-> Failed to connect, Close browser and retry after 20 seconds...")
+        await sleep(20000)
       }
       else {
         isConnected = true
@@ -321,8 +321,8 @@ function sleep(ms) {
         driver.quit()
       }
 
-      console.log("-> Failed to connect, Close browser and retry after 10 seconds...")
-      await sleep(10000)
+      console.log("-> Failed to connect, Close browser and retry after 20 seconds...")
+      await sleep(20000)
     }
   }
 
