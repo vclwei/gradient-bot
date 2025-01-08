@@ -32,7 +32,7 @@ if (proxies.length === 0) {
   let index = 0
   for (const proxy of proxies) {
     const name = `gradient-${index++}`
-    execSync(`PROXY=${proxy} APP_USER='${USER}' APP_PASS='${PASSWORD}' pm2 start app.js --name ${name} -l ${name}.log`)
+    execSync(`PROXY=${proxy} APP_USER='${USER}' APP_PASS='${PASSWORD}' pm2 start app.js --name ${name} -l ${name}.log --restart-delay=5000`)
     console.log(`-> Started ${name} with proxy ${proxy}`)
   }
 
