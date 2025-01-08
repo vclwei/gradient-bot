@@ -331,9 +331,9 @@ function sleep(ms) {
   // 截图链接状态
   takeScreenshot(driver, "connected.png")
 
-  console.log({
-    support_status: supportStatus,
-  })
+  // console.log({
+  //   support_status: supportStatus,
+  // })
 
   console.log("-> Lunched!")
 
