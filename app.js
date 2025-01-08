@@ -130,6 +130,7 @@ async function getDriverOptions() {
   options.addArguments("--remote-allow-origins=*")
   options.addArguments("--allow-running-insecure-content")
   options.addArguments("--enable-unsafe-swiftshader")
+  options.addArguments("--disable-software-rasterizer")
 
   if (!ALLOW_DEBUG) {
     // options.addArguments("--blink-settings=imagesEnabled=false")
