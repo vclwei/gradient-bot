@@ -184,6 +184,10 @@ async function getProxyIpInfo(driver, proxyUrl) {
   }
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 (async () => {
   await downloadExtension(extensionId)
 
@@ -275,35 +279,40 @@ async function getProxyIpInfo(driver, proxyUrl) {
       console.log("-> Gradient is available in your region. ")
     }
 
-    // <div class="absolute mt-3 right-0 z-10">
-    const supportStatus = await driver
-      .findElement(By.css(".absolute.mt-3.right-0.z-10"))
-      .getText()
+    
+    let retryCount = 0
+    let maxRetry = 10
+    let isGood = false
+    while (!isGood) {
+      await sleep(5000)
 
+      const supportStatus = await driver
+        .findElement(By.css(".absolute.mt-3.right-0.z-10"))
+        .getText()
+      console.log(`-> Init Status: ${supportStatus} retryCount: ${retryCount}`)
 
-    if (ALLOW_DEBUG) {
-      const dom = await driver
-        .findElement(By.css("html"))
-        .getAttribute("outerHTML")
-      fs.writeFileSync("dom.html", dom)
-      await takeScreenshot(driver, "status.png")
-    }
+      if (ALLOW_DEBUG) {
+        const dom = await driver
+          .findElement(By.css("html"))
+          .getAttribute("outerHTML")
+        fs.writeFileSync("dom.html", dom)
+        await takeScreenshot(driver, "status.png")
+      }
 
-    console.log("-> Init Status:", supportStatus)
-
-    if (supportStatus.includes("Disconnected")) {
-      console.log(
-        "-> Failed to connect! Please check the following: ",
-      )
-      console.log(`
-    - Make sure the proxy is working, by 'curl -vv -x ${PROXY} https://myip.ipip.net'
-    - Make sure the docker image is up to date, by 'docker pull overtrue/gradient-bot' and re-start the container.
-    - The official service itself is not very stable. So it is normal to see abnormal situations. Just wait patiently and it will restart automatically.
-    - If you are using a free proxy, it may be banned by the official service. Please try another static Static Residential proxy.
-  `)
-      await generateErrorReport(driver)
-      await driver.quit()
-      process.exit(1)
+      if (supportStatus.includes("Disconnected")) {
+        retryCount++
+        
+        if (retryCount >= maxRetry) {
+          console.log("-> Failed to connect, Retry count reached max retry count, exit...")
+          await generateErrorReport(driver)
+          await driver.quit()
+          await sleep(5000)
+          process.exit(1)
+        }
+        console.log("-> Failed to connect, Retry...")
+      } else {
+        isGood = true
+      }
     }
 
     console.log("-> Connected! Starting rolling...")
