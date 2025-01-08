@@ -330,6 +330,11 @@ async function getProxyIpInfo(driver, proxyUrl) {
 
     // keep the process running
     setInterval(() => {
+        // <div class="absolute mt-3 right-0 z-10">
+        driver.findElement(By.css(".absolute.mt-3.right-0.z-10")).getText().then((text) => {
+        console.log("-> Status:", text)
+      })
+
       driver.getTitle().then((title) => {
         console.log(`-> [${USER}] Running...`, title)
       })
