@@ -8,6 +8,7 @@ const path = require("path")
 const FormData = require("form-data")
 const proxy = require("selenium-webdriver/proxy")
 const proxyChain = require("proxy-chain")
+const { log } = require("console")
 require('console-stamp')(console, {
   format: ':date(yyyy/mm/dd HH:MM:ss.l)'
 })
@@ -203,93 +204,92 @@ function sleep(ms) {
     options.addArguments("--v=1")
   }
 
+
+  let isConnected = false
   let driver
-  try {
-    console.log("-> Starting browser...")
 
-    driver = await new Builder()
-      .forBrowser("chrome")
-      .setChromeOptions(options)
-      .build()
-
-    console.log("-> Browser started!")
-
-    console.log("-> Started! Logging in https://app.gradient.network/...")
-    await driver.get("https://app.gradient.network/")
-
-    const emailInput = By.css('[placeholder="Enter Email"]')
-    const passwordInput = By.css('[type="password"]')
-    const loginButton = By.css("button")
-
-    await driver.wait(until.elementLocated(emailInput), 30000)
-    await driver.wait(until.elementLocated(passwordInput), 30000)
-    await driver.wait(until.elementLocated(loginButton), 30000)
-
-    await driver.findElement(emailInput).sendKeys(USER)
-    await driver.findElement(passwordInput).sendKeys(PASSWORD)
-    await driver.findElement(loginButton).click()
-
-    // wait until find <a href="/dashboard/setting">
-    await driver.wait(until.elementLocated(By.css('a[href="/dashboard/setting"]')), 30000)
-
-    console.log("-> Logged in! Waiting for open extension...")
-
-    // 截图登录状态
-    takeScreenshot(driver, "logined.png")
-
-    await driver.get(`chrome-extension://${extensionId}/popup.html`)
-
-    console.log("-> Extension opened!")
-
-    // 直到找到 "Status" 文本的 div 元素
-    await driver.wait(
-      until.elementLocated(By.xpath('//div[contains(text(), "Status")]')),
-      30000
-    )
-
-    console.log("-> Extension loaded!")
-
-    // if there is a page with a button "I got it", click it
+  while (!isConnected) {
     try {
-      const gotItButton = await driver.findElement(
-        By.xpath('//button[contains(text(), "I got it")]')
+      console.log("-> Starting browser...")
+
+      driver = await new Builder()
+        .forBrowser("chrome")
+        .setChromeOptions(options)
+        .build()
+
+      console.log("-> Browser started!")
+
+      console.log("-> Started! Logging in https://app.gradient.network/...")
+      await driver.get("https://app.gradient.network/")
+
+      const emailInput = By.css('[placeholder="Enter Email"]')
+      const passwordInput = By.css('[type="password"]')
+      const loginButton = By.css("button")
+
+      await driver.wait(until.elementLocated(emailInput), 30000)
+      await driver.wait(until.elementLocated(passwordInput), 30000)
+      await driver.wait(until.elementLocated(loginButton), 30000)
+
+      await driver.findElement(emailInput).sendKeys(USER)
+      await driver.findElement(passwordInput).sendKeys(PASSWORD)
+      await driver.findElement(loginButton).click()
+
+      // wait until find <a href="/dashboard/setting">
+      await driver.wait(until.elementLocated(By.css('a[href="/dashboard/setting"]')), 30000)
+
+      console.log("-> Logged in! Waiting for open extension...")
+
+      // 截图登录状态
+      takeScreenshot(driver, "logined.png")
+
+      await driver.get(`chrome-extension://${extensionId}/popup.html`)
+
+      console.log("-> Extension opened!")
+
+      // 直到找到 "Status" 文本的 div 元素
+      await driver.wait(
+        until.elementLocated(By.xpath('//div[contains(text(), "Status")]')),
+        30000
       )
-      await gotItButton.click()
-      console.log('-> "I got it" button clicked!')
-    } catch (error) {
-      // save rendered dom to file
-      const dom = await driver
-        .findElement(By.css("html"))
-        .getAttribute("outerHTML")
-      fs.writeFileSync("dom.html", dom)
-      console.error('-> No "I got it" button found!(skip)')
-    }
 
-    // if found a div include text "Sorry, Gradient is not yet available in your region. ", then exit
-    try {
-      const notAvailable = await driver.findElement(
-        By.xpath(
-          '//*[contains(text(), "Sorry, Gradient is not yet available in your region.")]'
+      console.log("-> Extension loaded!")
+
+      // if there is a page with a button "I got it", click it
+      try {
+        const gotItButton = await driver.findElement(
+          By.xpath('//button[contains(text(), "I got it")]')
         )
-      )
-      console.log("-> Sorry, Gradient is not yet available in your region. ")
-      await driver.quit()
-      process.exit(1)
-    } catch (error) {
-      console.log("-> Gradient is available in your region. ")
-    }
+        await gotItButton.click()
+        console.log('-> "I got it" button clicked!')
+      } catch (error) {
+        // save rendered dom to file
+        const dom = await driver
+          .findElement(By.css("html"))
+          .getAttribute("outerHTML")
+        fs.writeFileSync("dom.html", dom)
+        console.error('-> No "I got it" button found!(skip)')
+      }
 
-    
-    let retryCount = 0
-    let maxRetry = 10
-    let isGood = false
-    while (!isGood) {
-      await sleep(5000)
+      // if found a div include text "Sorry, Gradient is not yet available in your region. ", then exit
+      try {
+        const notAvailable = await driver.findElement(
+          By.xpath(
+            '//*[contains(text(), "Sorry, Gradient is not yet available in your region.")]'
+          )
+        )
+        console.log("-> Sorry, Gradient is not yet available in your region. ")
+        await driver.quit()
+        console.log("-> Region not available, remove proxy")
+        await sleep(10000)
+        continue
+      } catch (error) {
+        console.log("-> Gradient is available in your region. ")
+      }
 
       const supportStatus = await driver
         .findElement(By.css(".absolute.mt-3.right-0.z-10"))
         .getText()
-      console.log(`-> Init Status: ${supportStatus} retryCount: ${retryCount}`)
+      console.log(`-> Init Status: ${supportStatus}`)
 
       if (ALLOW_DEBUG) {
         const dom = await driver
@@ -300,57 +300,54 @@ function sleep(ms) {
       }
 
       if (supportStatus.includes("Disconnected")) {
-        retryCount++
-        
-        if (retryCount >= maxRetry) {
-          console.log("-> Failed to connect, Retry count reached max retry count, exit...")
-          await generateErrorReport(driver)
-          await driver.quit()
-          await sleep(5000)
-          process.exit(1)
-        }
-        console.log("-> Failed to connect, Retry...")
-      } else {
-        isGood = true
+        console.log("-> Failed to connect, Retry count reached max retry count, exit...")
+        await generateErrorReport(driver)
+        await driver.quit()
+        console.log("-> Failed to connect, Close browser and retry after 10 seconds...")
+        await sleep(10000)
       }
+      else {
+        isConnected = true
+      }
+    } catch (error) {
+      console.error("Error occurred:", error)
+      // show error line
+      console.error(error.stack)
+
+      if (driver) {
+        await generateErrorReport(driver)
+        console.error("-> Error report generated!")
+        console.error(fs.readFileSync("error.log").toString())
+        driver.quit()
+      }
+
+      console.log("-> Failed to connect, Close browser and retry after 10 seconds...")
+      await sleep(10000)
     }
+  }
 
-    console.log("-> Connected! Starting rolling...")
+  console.log("-> Connected! Starting rolling...")
 
-    // 截图链接状态
-    takeScreenshot(driver, "connected.png")
+  // 截图链接状态
+  takeScreenshot(driver, "connected.png")
 
-    console.log({
-      support_status: supportStatus,
+  console.log({
+    support_status: supportStatus,
+  })
+
+  console.log("-> Lunched!")
+
+  // keep the process running
+  setInterval(() => {
+    // <div class="absolute mt-3 right-0 z-10">
+    driver.findElement(By.css(".absolute.mt-3.right-0.z-10")).getText().then((text) => {
+      console.log("-> Status:", text)
     })
 
-    console.log("-> Lunched!")
-
-    // keep the process running
-    setInterval(() => {
-        // <div class="absolute mt-3 right-0 z-10">
-        driver.findElement(By.css(".absolute.mt-3.right-0.z-10")).getText().then((text) => {
-        console.log("-> Status:", text)
-      })
-
-      if (PROXY) {
-        console.log(`-> [${USER}] Running with proxy ${PROXY}...`)
-      } else {
-        console.log(`-> [${USER}] Running without proxy...`)
-      }
-    }, 180000)
-  } catch (error) {
-    console.error("Error occurred:", error)
-    // show error line
-    console.error(error.stack)
-
-    if (driver) {
-      await generateErrorReport(driver)
-      console.error("-> Error report generated!")
-      console.error(fs.readFileSync("error.log").toString())
-      driver.quit()
+    if (PROXY) {
+      console.log(`-> [${USER}] Running with proxy ${PROXY}...`)
+    } else {
+      console.log(`-> [${USER}] Running without proxy...`)
     }
-
-    process.exit(1)
-  }
+  }, 180000)
 })()
