@@ -297,24 +297,25 @@ async function getProxyIpInfo(driver, proxyUrl) {
       await takeScreenshot(driver, "status.png")
     }
 
-    console.log("-> Status:", supportStatus)
+    console.log("-> Init Status:", supportStatus)
 
-    if (supportStatus.includes("Disconnected")) {
-      console.log(
-        "-> Failed to connect! Please check the following: ",
-      )
-      console.log(`
-    - Make sure the proxy is working, by 'curl -vv -x ${PROXY} https://myip.ipip.net'
-    - Make sure the docker image is up to date, by 'docker pull overtrue/gradient-bot' and re-start the container.
-    - The official service itself is not very stable. So it is normal to see abnormal situations. Just wait patiently and it will restart automatically.
-    - If you are using a free proxy, it may be banned by the official service. Please try another static Static Residential proxy.
-  `)
-      await generateErrorReport(driver)
-      await driver.quit()
-      setTimeout(() => {
-        process.exit(1)
-      }, 5000)
-    }
+  //   if (supportStatus.includes("Disconnected")) {
+  //     console.log(
+  //       "-> Failed to connect! Please check the following: ",
+  //     )
+  //     console.log(`
+  //   - Make sure the proxy is working, by 'curl -vv -x ${PROXY} https://myip.ipip.net'
+  //   - Make sure the docker image is up to date, by 'docker pull overtrue/gradient-bot' and re-start the container.
+  //   - The official service itself is not very stable. So it is normal to see abnormal situations. Just wait patiently and it will restart automatically.
+  //   - If you are using a free proxy, it may be banned by the official service. Please try another static Static Residential proxy.
+  // `)
+  //     await generateErrorReport(driver)
+  //     await driver.close()
+  //     await driver.quit()
+  //     setTimeout(() => {
+  //       process.exit(1)
+  //     }, 5000)
+  //   }
 
     console.log("-> Connected! Starting rolling...")
 
