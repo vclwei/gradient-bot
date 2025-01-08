@@ -210,14 +210,6 @@ async function getProxyIpInfo(driver, proxyUrl) {
 
     console.log("-> Browser started!")
 
-    if (PROXY) {
-      try {
-        await getProxyIpInfo(driver, PROXY)
-      } catch (error) {
-        throw new Error("Failed to get proxy IP info, please check the proxy by the command 'curl -vv -x ${PROXY} https://myip.ipip.net'")
-      }
-    }
-
     console.log("-> Started! Logging in https://app.gradient.network/...")
     await driver.get("https://app.gradient.network/")
 
@@ -310,11 +302,8 @@ async function getProxyIpInfo(driver, proxyUrl) {
     - If you are using a free proxy, it may be banned by the official service. Please try another static Static Residential proxy.
   `)
       await generateErrorReport(driver)
-      await driver.close()
       await driver.quit()
-      setTimeout(() => {
-        process.exit(1)
-      }, 5000)
+      process.exit(1)
     }
 
     console.log("-> Connected! Starting rolling...")
