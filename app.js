@@ -81,6 +81,9 @@ async function takeScreenshot(driver, filename) {
 }
 
 async function generateErrorReport(driver) {
+  if (!ALLOW_DEBUG) {
+    return
+  }
   //write dom
   const dom = await driver.findElement(By.css("html")).getAttribute("outerHTML")
   fs.writeFileSync("error.html", dom)
@@ -254,20 +257,23 @@ function sleep(ms) {
 
       console.log("-> Extension loaded!")
 
-      // if there is a page with a button "I got it", click it
+      
+      // Click or slip Tip Button
       try {
-        const gotItButton = await driver.findElement(
+        let tipButton = await driver.findElement(
+          By.xpath('//button[contains(text(), "Close")]')
+        )
+        await tipButton.click()
+        console.log('-> "Close" button clicked!')
+
+        await driver.sleep(1000)
+        tipButton = await driver.findElement(
           By.xpath('//button[contains(text(), "I got it")]')
         )
-        await gotItButton.click()
+        await tipButton.click()
         console.log('-> "I got it" button clicked!')
       } catch (error) {
-        // save rendered dom to file
-        const dom = await driver
-          .findElement(By.css("html"))
-          .getAttribute("outerHTML")
-        fs.writeFileSync("dom.html", dom)
-        console.error('-> No "I got it" button found!(skip)')
+        console.error('-> No Tip Button found!(skip)')
       }
 
       // if found a div include text "Sorry, Gradient is not yet available in your region. ", then exit
