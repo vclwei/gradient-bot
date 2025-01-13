@@ -345,11 +345,11 @@ function sleep(ms) {
 
   console.log("-> Lunched!")
 
-  await driver.close()
+  // await driver.close()
 
   // keep the process running
   setInterval(async () => {
-    await driver.get(`chrome-extension://${extensionId}/popup.html`)
+    // await driver.get(`chrome-extension://${extensionId}/popup.html`)
     // <div class="absolute mt-3 right-0 z-10">
     const text = await driver.findElement(By.css(".absolute.mt-3.right-0.z-10")).getText()
     console.log("-> Status:", text)
@@ -359,6 +359,6 @@ function sleep(ms) {
       await driver.quit()
       process.exit(1)
     }
-    await driver.close()
-  }, 180000)
+    // await driver.close()
+  }, 600000)
 })()
