@@ -345,12 +345,14 @@ function sleep(ms) {
 
   console.log("-> Lunched!")
 
-  // await driver.close()
+  console.log("-> Open about:blank")
+  await driver.get('about:blank')
 
   // keep the process running
   setInterval(async () => {
-    // await driver.get(`chrome-extension://${extensionId}/popup.html`)
+    await driver.get(`chrome-extension://${extensionId}/popup.html`)
     // <div class="absolute mt-3 right-0 z-10">
+    await driver.wait(until.elementLocated(By.css(".absolute.mt-3.right-0.z-10")), 30000)
     const text = await driver.findElement(By.css(".absolute.mt-3.right-0.z-10")).getText()
     console.log("-> Status:", text)
 
@@ -359,6 +361,7 @@ function sleep(ms) {
       await driver.quit()
       process.exit(1)
     }
-    // await driver.close()
+    console.log("-> Open about:blank")
+    await driver.get('about:blank')
   }, 600000)
 })()
