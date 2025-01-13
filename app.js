@@ -323,8 +323,10 @@ function sleep(ms) {
       if (driver) {
         await generateErrorReport(driver)
         console.error("-> Error report generated!")
-        console.error(fs.readFileSync("error.log").toString())
-        driver.quit()
+        if (ALLOW_DEBUG) {
+          console.error(fs.readFileSync("error.log").toString())
+        }
+        await driver.quit()
       }
 
       console.log("-> Failed to connect, Close browser and retry after 20 seconds...")
@@ -343,17 +345,20 @@ function sleep(ms) {
 
   console.log("-> Lunched!")
 
-  // keep the process running
-  setInterval(() => {
-    // <div class="absolute mt-3 right-0 z-10">
-    driver.findElement(By.css(".absolute.mt-3.right-0.z-10")).getText().then((text) => {
-      console.log("-> Status:", text)
-    })
+  await driver.close()
 
-    if (PROXY) {
-      console.log(`-> [${USER}] Running with proxy ${PROXY}...`)
-    } else {
-      console.log(`-> [${USER}] Running without proxy...`)
+  // keep the process running
+  setInterval(async () => {
+    await driver.get(`chrome-extension://${extensionId}/popup.html`)
+    // <div class="absolute mt-3 right-0 z-10">
+    const text = await driver.findElement(By.css(".absolute.mt-3.right-0.z-10")).getText()
+    console.log("-> Status:", text)
+
+    if (text.includes("Disconnected")) {
+      console.log("-> Disconnected, exit...")
+      await driver.quit()
+      process.exit(1)
     }
+    await driver.close()
   }, 180000)
 })()
